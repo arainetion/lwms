@@ -7,6 +7,7 @@ import com.hy.lwmsbackend.utils.PageUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +26,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/sys/user")
-@Api("用户信息")
+@Api(tags = "用户相关操作", value = "用户信息")
 public class UserController {
 
 
@@ -38,6 +39,14 @@ public class UserController {
                           @RequestParam("pageSize") int pageSize) {
 
         return userService.queryByUserNoAndReturnByAuthority(no, pageIndex, pageSize);
+    }
+
+    @GetMapping("/listById")
+    @ApiOperation("根据用户Id查询用户")
+    public PageUtils listById(String userId) {
+
+        return userService.queryById(userId);
+
     }
 
     @GetMapping("/checkNo")
@@ -68,10 +77,11 @@ public class UserController {
 
     //TODO 假分页改真分页
 
+    @Transactional
     @ApiOperation("根据业务逻辑删除用户")
-    @GetMapping("/deleteUser")
-    public boolean deleteUser(@RequestParam("id") Integer id, @RequestParam("roleId") Integer roleId) {
+    @PostMapping("/deleteUser")
+    public boolean deleteUser(@RequestBody User user) {
 
-        return userService.removeByIdAndRoleId(id, roleId);
+        return userService.removeByIdAndRoleId(user);
     }
 }

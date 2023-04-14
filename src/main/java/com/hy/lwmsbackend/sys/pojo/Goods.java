@@ -2,6 +2,7 @@ package com.hy.lwmsbackend.sys.pojo;
 
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
 import io.swagger.annotations.ApiModel;
@@ -20,7 +21,7 @@ import lombok.experimental.Accessors;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="Goods对象", description="")
+@ApiModel(value="Goods对象", description="商品信息")
 public class Goods implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -36,6 +37,7 @@ public class Goods implements Serializable {
     private Integer storage;
 
     @ApiModelProperty(value = "分类")
+    @TableField(value = "type")
     private Integer goodsType;
 
     @ApiModelProperty(value = "数量")

@@ -2,6 +2,7 @@ package com.hy.lwmsbackend.sys.service;
 
 import com.hy.lwmsbackend.sys.pojo.Record;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.hy.lwmsbackend.utils.PageUtils;
 
 /**
  * <p>
@@ -13,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IRecordService extends IService<Record> {
 
+    PageUtils queryByGoods(String goods, int pageIndex, int pageSize);
 }

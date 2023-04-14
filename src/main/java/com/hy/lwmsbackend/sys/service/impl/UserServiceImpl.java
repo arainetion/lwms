@@ -1,5 +1,6 @@
 package com.hy.lwmsbackend.sys.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hy.lwmsbackend.sys.pojo.User;
@@ -8,15 +9,11 @@ import com.hy.lwmsbackend.sys.mapper.UserMapper;
 import com.hy.lwmsbackend.sys.service.IUserService;
 import com.hy.lwmsbackend.sys.service.IWarehouseInfoService;
 import com.hy.lwmsbackend.utils.PageUtils;
+import io.swagger.models.auth.In;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -35,9 +32,6 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
-
-    @Resource
-    private PlatformTransactionManager transactionManager;
 
     @Resource
     private IWarehouseInfoService warehouseInfoService;
@@ -111,14 +105,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public boolean MySaveOrUpdate(User user) {
 
-        //TODO 经理更新后应该同步更新仓库表中的经理信息
-
         User currentUser = queryByAuthenticatiedUser();
 
         //用户id为0或者为null，则新增
         if (user.getId() == null || user.getId() == 0) {
             //业务逻辑已在表单验证中实现
-
+            //当前登录的是经理，只能在自己仓库新增
+            if (currentUser.getRoleId() == 1) {
+                if (currentUser.getWarehouseLocation().equals(user.getWarehouseLocation())) {
+                    return this.save(user);
+                }
+                return false;
+            }
             return this.save(user);
         } else {
             // 根据roleId确定修改权限
@@ -126,7 +124,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             //如果 当前登录用户 roleId > 要修改的 user.getRoleId则不能修改
             if (roleId < user.getRoleId()) {
                 //满足权限的前提下修改roleId和仓库
-                if(!updateIdAndWarehouseLocation(user,currentUser)){//调动失败
+                if (!updateIdAndWarehouseLocation(user, currentUser)) {//调动失败
                     return false;
                 }
                 //修改保证账号唯一性(新增时通过表单验证保证)
@@ -145,9 +143,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
     }
 
-//    @Transactional
+    //    @Transactional
     public boolean updateIdAndWarehouseLocation(User user, User currentUser) {
-        //                //如果修改经理信息，同步更新仓库信息中的经理信息
+        //如果修改经理信息，同步更新仓库信息中的经理信息
         //roleId和仓库的更新是单独更新的，根据账号查询仓库表中的经理是否是当前更新账号
         String manger = warehouseInfoService.checkWarehouseLocation(user.getWarehouseLocation());
         List<WarehouseInfo> warehouseInfoList = warehouseInfoService.getByManger(manger);
@@ -165,22 +163,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             if (!manger.equals("fail") && currentUser.getRoleId() < roleId) {//仓库经理职位空缺并且防止经理调低其他经理的roleId
                 if (user.getRoleId() == 2) {//要么是降职
                     //更新仓库信息中的经理信息
+                    assert warehouseInfoFilterByWarehouseLocation != null;
                     warehouseInfoFilterByWarehouseLocation.setManager("暂无经理");
                     updateManger(warehouseInfoFilterByWarehouseLocation);
-                } else if (!(warehouseInfoFilterByWarehouseLocation.getWarehouseLocation()).equals(user.getWarehouseLocation()) && user.getRoleId() == 2) {
-                    //要么被降职且换工作地点
-                    warehouseInfoFilterByWarehouseLocation.setManager("暂无经理");
-                    updateManger(warehouseInfoFilterByWarehouseLocation);
-                } else if (warehouseInfoFilterByWarehouseLocation.getWarehouseLocation().equals(user.getWarehouseLocation()) && roleId == user.getRoleId()) {
-                    //要么是换工作地点，换的地方如果有经理,校验不会通过。换的地方没有经理
-                    //根据换的地方查到仓库记录
-                    WarehouseInfo warehouseInfo1 = warehouseInfoService.getByWarehouseLocation(user.getWarehouseLocation());
-                    //更新仓库经理
-                    warehouseInfo1.setManager(user.getNo());
-                    updateManger(warehouseInfo1);
-                } else {//升职和换工作地点升职
-                    warehouseInfoFilterByWarehouseLocation.setManager(user.getNo());
-                    updateManger(warehouseInfoFilterByWarehouseLocation);
+                } else {
+                    assert warehouseInfoFilterByWarehouseLocation != null;
+                    if (warehouseInfoFilterByWarehouseLocation.getWarehouseLocation().equals(user.getWarehouseLocation()) && roleId.equals(user.getRoleId())) {
+                        //要么是换工作地点，换的地方如果有经理,校验不会通过。换的地方没有经理
+                        //根据换的地方查到仓库记录
+                        WarehouseInfo warehouseInfo1 = warehouseInfoService.getByWarehouseLocation(user.getWarehouseLocation());
+                        //更新仓库经理
+                        warehouseInfo1.setManager(user.getNo());
+                        updateManger(warehouseInfo1);
+                    } else {//升职和换工作地点升职
+                        warehouseInfoFilterByWarehouseLocation.setManager(user.getNo());
+                        updateManger(warehouseInfoFilterByWarehouseLocation);
+                    }
                 }
                 //更新user表的rolId 和 位置
                 return this.updateById(user);
@@ -228,28 +226,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     /**
-     * 删除用户的时候验证是否有权限
+     * 根据权限删除，若删除的是经理，则更新仓库信息表中经理信息
      *
-     * @param id
-     * @param roleId
+     * @param user
      * @return
      */
     @Override
-    public boolean removeByIdAndRoleId(Integer id, Integer roleId) {
+    public boolean removeByIdAndRoleId(User user) {
 
         User currentUser = queryByAuthenticatiedUser();
 
         //获取登录用户roleId
         Integer currentUserRoleId = currentUser.getRoleId();
         if (currentUserRoleId == 0) {//是超级管理员 任意删除，除自己外
-            if (roleId == 0) {
+            if (user.getRoleId() == 0) {
                 return false;
+            } else if (user.getRoleId() == 1) {//删除的是经理
+                //根据仓库位置和账号查询仓库信息
+                QueryWrapper<WarehouseInfo> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("manager", user.getNo());
+                queryWrapper.eq("warehouse_location", user.getWarehouseLocation());
+                try {
+                    WarehouseInfo warehouseInfo = warehouseInfoService.getOne(queryWrapper);
+                    //更新仓库信息中的经理信息
+                    warehouseInfo.setManager("暂无经理");
+                    warehouseInfoService.updateById(warehouseInfo);
+                    return this.removeById(user.getId());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             } else {
-                return this.removeById(id);
+                return this.removeById(user.getId());
             }
         } else if (currentUserRoleId == 1) {//是经理，只可以删除下属
-            if (roleId == 2) {
-                return this.removeById(id);
+            if (user.getRoleId() == 2) {
+                return this.removeById(user.getId());
             }
             return false;
         } else //普通员工不能删除
@@ -295,5 +306,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         value.put("msg", "权限不足");
         map.put("fail", value);
         return map;
+    }
+
+    @Override
+    public PageUtils queryById(String userId) {
+
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.isNotEmpty(userId)) {
+            lambdaQueryWrapper.eq(User::getId, Integer.valueOf(userId));
+        }
+        List<User> userList = this.baseMapper.selectList(lambdaQueryWrapper);
+        return new PageUtils(userList, userList.size());
     }
 }

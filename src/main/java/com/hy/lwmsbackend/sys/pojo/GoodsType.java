@@ -19,7 +19,7 @@ import lombok.experimental.Accessors;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="GoodsType对象", description="")
+@ApiModel(value="GoodsType对象", description="商品类型信息")
 public class GoodsType implements Serializable {
 
     private static final long serialVersionUID = 1L;

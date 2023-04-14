@@ -1,6 +1,7 @@
 package com.hy.lwmsbackend.utils;
 
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.ApiModel;
 import lombok.Getter;
 import lombok.Setter;
@@ -57,18 +58,24 @@ public class PageUtils implements Serializable {
      */
     public PageUtils(List<?> list, int totalCount, int pageSize, int currPage) {
 
+            int fromIndex = (currPage - 1) * pageSize;
+            int toIndex = fromIndex + pageSize;
+            if (toIndex > totalCount) {
+                toIndex = totalCount;
+            }
+            this.list = list.subList(fromIndex, toIndex);
+            this.totalCount = totalCount;
+            this.pageSize = pageSize;
+            this.currPage = currPage;
+            this.totalPage = (int) Math.ceil((double) totalCount / pageSize);
+    }
 
-        int fromIndex = (currPage - 1) * pageSize;
-        int toIndex = fromIndex + pageSize;
-        if (toIndex > totalCount) {
-            toIndex = totalCount;
-        }
+    public PageUtils(List<?> list, int totalCount) {
 
-        this.list = list.subList(fromIndex, toIndex);
+        this.list = list;
         this.totalCount = totalCount;
-        this.pageSize = pageSize;
-        this.currPage = currPage;
         this.totalPage = (int) Math.ceil((double) totalCount / pageSize);
     }
+
 
 }

@@ -27,6 +27,7 @@ import java.util.HashMap;
  * @Description
  */
 
+@SuppressWarnings({"all"})
 public class TokenLoginFilter extends UsernamePasswordAuthenticationFilter {
 
     /**
@@ -122,7 +123,7 @@ public class TokenLoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         PrintWriter writer = response.getWriter();
         HashMap<String, Object> responseInfo = new HashMap<>();
-        responseInfo.put("code",HttpServletResponse.SC_UNAUTHORIZED);;
+        responseInfo.put("code",HttpServletResponse.SC_UNAUTHORIZED);
         responseInfo.put("msg","认证失败，请检查用户名或密码");
         writer.write(JSON.toJSONString(responseInfo));
         writer.flush();

@@ -25,7 +25,9 @@ public interface IUserService extends IService<User> {
 
     boolean MySaveOrUpdate(User user);
 
-    boolean removeByIdAndRoleId(Integer id, Integer roleId);
+    boolean removeByIdAndRoleId(User user);
 
     Map<String, Object> checkRoleId(Integer roleId, String warehouseLocation, String no);
+
+    PageUtils queryById(String userId);
 }
