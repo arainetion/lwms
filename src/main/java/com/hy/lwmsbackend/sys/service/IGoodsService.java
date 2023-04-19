@@ -23,5 +23,5 @@ public interface IGoodsService extends IService<Goods> {
 
     PageUtils queryBy(String name, String storage, String goodsType, int pageIndex, int pageSize);
 
-    PageUtils queryById(String id, int pageIndex, int pageSize);
+    PageUtils queryById(String id);
 }

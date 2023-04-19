@@ -15,4 +15,6 @@ import com.hy.lwmsbackend.utils.PageUtils;
 public interface IRecordService extends IService<Record> {
 
     PageUtils queryByGoods(String goods, int pageIndex, int pageSize);
+
+    boolean saveRecord(Record record);
 }

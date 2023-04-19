@@ -1,16 +1,14 @@
 package com.hy.lwmsbackend.sys.controller;
 
 
+import com.hy.lwmsbackend.sys.pojo.Record;
+import com.hy.lwmsbackend.sys.service.IGoodsService;
 import com.hy.lwmsbackend.sys.service.IGoodsTypeService;
 import com.hy.lwmsbackend.sys.service.IRecordService;
 import com.hy.lwmsbackend.utils.PageUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -30,12 +28,20 @@ public class RecordController {
     @Resource
     private IRecordService recordService;
 
-    @ApiOperation("根据分类名称查询商品分类信息")
+    @ApiOperation("根据分类名称查询操作记录")
     @GetMapping("/list")
     public PageUtils list(@RequestParam("goods") String goods,
                           @RequestParam("pageIndex") int pageIndex,
                           @RequestParam("pageSize") int pageSize) {
 
         return recordService.queryByGoods(goods, pageIndex, pageSize);
+    }
+
+    @ApiOperation("保存操作记录")
+    @PostMapping("/saveRecord")
+    public boolean saveRecord(@RequestBody Record record){
+
+        System.out.println(record.toString());
+        return recordService.saveRecord(record);
     }
 }

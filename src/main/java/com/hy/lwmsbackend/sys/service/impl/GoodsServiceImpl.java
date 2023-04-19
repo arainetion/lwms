@@ -64,13 +64,13 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
     }
 
     @Override
-    public PageUtils queryById(String id, int pageIndex, int pageSize) {
+    public PageUtils queryById(String id) {
 
         LambdaQueryWrapper<Goods> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(id) && "null".equals(id)){
             lambdaQueryWrapper.eq(Goods::getId, Integer.valueOf(id));
         }
         List<Goods> goodsList = this.baseMapper.selectList(lambdaQueryWrapper);
-        return new PageUtils(goodsList, goodsList.size(), pageSize, pageIndex);
+        return new PageUtils(goodsList, goodsList.size(),true);
     }
 }

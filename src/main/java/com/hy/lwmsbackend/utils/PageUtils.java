@@ -48,6 +48,7 @@ public class PageUtils implements Serializable {
      */
     private List<?> list;
 
+    private boolean flag = false;
     /**
      * 分页
      *
@@ -70,11 +71,14 @@ public class PageUtils implements Serializable {
             this.totalPage = (int) Math.ceil((double) totalCount / pageSize);
     }
 
-    public PageUtils(List<?> list, int totalCount) {
+    public PageUtils(List<?> list, int totalCount ,boolean flag) {
 
-        this.list = list;
-        this.totalCount = totalCount;
-        this.totalPage = (int) Math.ceil((double) totalCount / pageSize);
+        this.flag = flag;
+        if (flag){
+            this.list = list;
+            this.totalCount = totalCount;
+            this.totalPage = (int) Math.ceil((double) totalCount / pageSize);
+        }
     }
 
 

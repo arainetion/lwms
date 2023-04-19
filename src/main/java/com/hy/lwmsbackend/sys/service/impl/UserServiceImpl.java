@@ -19,6 +19,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +36,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Resource
     private IWarehouseInfoService warehouseInfoService;
+
+    @Resource
+    private UserMapper userMapper;
 
     private User queryByAuthenticatiedUser() {
 
@@ -316,6 +320,55 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             lambdaQueryWrapper.eq(User::getId, Integer.valueOf(userId));
         }
         List<User> userList = this.baseMapper.selectList(lambdaQueryWrapper);
-        return new PageUtils(userList, userList.size());
+        return new PageUtils(userList, userList.size(), true);
     }
+
+    @Override
+    public PageUtils listNoPage(String no) {
+
+        //通过权限返回list
+        User currentUser = queryByAuthenticatiedUser();
+        //1.获取登录用户的roleId
+        Integer roleId = currentUser.getRoleId();
+        String warehouseLocation = currentUser.getWarehouseLocation();
+
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>().ge(User::getRoleId, roleId);
+        if (!("全国".equals(warehouseLocation))) {
+            queryWrapper.eq(User::getWarehouseLocation, warehouseLocation);
+        }
+        //通过用户名查询返回
+        List<User> userList = this.list(queryWrapper);
+
+
+        //2.根据roleId返回PageUtils
+        if (roleId == 0) { //可以查看所有用户
+            return new PageUtils(userList, userList.size(), true);
+        } else if (roleId == 2) { //可以查看同仓库同事，和仓库经理
+            List<User> userList2 = userList.stream()
+                    .filter(user -> {
+                        //a 同仓库普通员工
+                        return user.getRoleId() == 2 && warehouseLocation.equals(user.getWarehouseLocation());
+                    })
+                    .collect(Collectors.toList());
+            return new PageUtils(userList2, userList2.size(), true);
+        } else { //可以查看同级和对应仓库的下属
+            List<User> userList1 = userList.stream()
+                    .filter(user -> {
+                        //自己
+                        boolean a = user.getNo().equals(currentUser.getNo());
+                        //下属
+                        boolean b = warehouseLocation.equals(user.getWarehouseLocation()) && roleId < user.getRoleId();
+                        return a || b;
+                    })
+                    .collect(Collectors.toList());
+            return new PageUtils(userList1, userList1.size(), true);
+        }
+    }
+
+    @Override
+    public User listByNo(String no) {
+
+       return this.userMapper.listByNo(no);
+    }
+
 }

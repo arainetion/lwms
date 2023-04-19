@@ -99,7 +99,7 @@ public class WarehouseInfoServiceImpl extends ServiceImpl<WarehouseInfoMapper, W
         if (!flag) {
             return new PageUtils(warehouseInfoList, warehouseInfoList.size(), pageSize, pageIndex);
         } else {
-            return new PageUtils(warehouseInfoList, warehouseInfoList.size());
+            return new PageUtils(warehouseInfoList, warehouseInfoList.size(),true);
         }
     }
 
@@ -158,6 +158,6 @@ public class WarehouseInfoServiceImpl extends ServiceImpl<WarehouseInfoMapper, W
         LambdaQueryWrapper<WarehouseInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.like(WarehouseInfo::getWarehouseLocation, warehouseLocation);
         List<WarehouseInfo> warehouseInfoList = this.baseMapper.selectList(lambdaQueryWrapper);
-        return new PageUtils(warehouseInfoList, warehouseInfoList.size());
+        return new PageUtils(warehouseInfoList, warehouseInfoList.size(),true);
     }
 }

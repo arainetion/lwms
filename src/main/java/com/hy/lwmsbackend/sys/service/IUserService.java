@@ -30,4 +30,8 @@ public interface IUserService extends IService<User> {
     Map<String, Object> checkRoleId(Integer roleId, String warehouseLocation, String no);
 
     PageUtils queryById(String userId);
+
+    PageUtils listNoPage(String no);
+
+    User listByNo(String no);
 }

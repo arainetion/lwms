@@ -38,11 +38,9 @@ public class GoodsController {
 
     @ApiOperation("根据商品ID查询商品信息")
     @GetMapping("/listById")
-    public PageUtils listById(@RequestParam("goods") String id,
-                          @RequestParam("pageIndex") int pageIndex,
-                          @RequestParam("pageSize") int pageSize) {
+    public PageUtils listById(@RequestParam("goods") String id) {
 
-        return goodsService.queryById(id, pageIndex, pageSize);
+        return goodsService.queryById(id);
     }
 
     @ApiOperation("根据条件查询商品信息")

@@ -41,6 +41,13 @@ public class UserController {
         return userService.queryByUserNoAndReturnByAuthority(no, pageIndex, pageSize);
     }
 
+    @GetMapping("/listNoPage")
+    @ApiOperation("根据用户账号查询用户,不分页")
+    public PageUtils listNoPage(@RequestParam("no") String no) {
+
+        return userService.listNoPage(no);
+    }
+
     @GetMapping("/listById")
     @ApiOperation("根据用户Id查询用户")
     public PageUtils listById(String userId) {
@@ -55,6 +62,13 @@ public class UserController {
 
         List<User> userList = userService.queryByUserNo(no);
         return userList.size() == 1;
+    }
+
+    @GetMapping("/listByNo")
+    @ApiOperation("根据账号查询name")
+    public User listByNo(@RequestParam("no") String no) {
+
+        return userService.listByNo(no);
     }
 
     @ApiOperation("校验新增用户roleId是否合法")
