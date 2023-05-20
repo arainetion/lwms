@@ -34,7 +34,7 @@ public class JWTUtils {
         JWTCreator.Builder builder = JWT.create();
 
         //设置payload
-        map.forEach((k,v) -> builder.withClaim(k,v));
+        map.forEach(builder::withClaim);
         //设置过期时间
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, 7);//默认过期时间为7天

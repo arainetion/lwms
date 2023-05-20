@@ -160,9 +160,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             }
         }
         Integer roleId = this.baseMapper.selectById(user.getId()).getRoleId();//通过id不变得到修改前的roleId
-//        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
-//        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);//新发起一个事务
-//        TransactionStatus status = transactionManager.getTransaction(def);//获得事务状态
         try {
             if (!manger.equals("fail") && currentUser.getRoleId() < roleId) {//仓库经理职位空缺并且防止经理调低其他经理的roleId
                 if (user.getRoleId() == 2) {//要么是降职
@@ -238,7 +235,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public boolean removeByIdAndRoleId(User user) {
 
-        User currentUser = queryByAuthenticatiedUser();
+        User currentUser = queryByAuthenticatiedUser();//获取当前登录用户
 
         //获取登录用户roleId
         Integer currentUserRoleId = currentUser.getRoleId();

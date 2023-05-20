@@ -19,7 +19,7 @@ spring:
   
   #Failed to start bean ‘documentationPluginsBootstrapper‘ 版本冲突问题
   mvc:
-    pathmatch:
+    path match:
       matching-strategy: ant_path_matcher
 
 
